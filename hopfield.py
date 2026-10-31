@@ -203,3 +203,53 @@ for m in range(2, 11):
     net.train_hebb(patterns[:m])
     ok = sum(np.array_equal(net.recall(patterns[k]), patterns[k]) for k in range(m))
     print(m, "wzorców, odtworzono czystych:", ok)
+
+net = Hopfield()
+net.train_hebb(patterns[:3])
+
+for level, data in ((0.1, noisy_10), (0.2, noisy_20), (0.3, noisy_30)):
+    for k in range(3):
+        out = net.recall(data[k])
+        print(level, k, np.sum(out != patterns[k]))   # 0 = naprawiony
+
+
+def shift(img, dy, dx):
+    out = np.full((8, 8), -1)
+    for y in range(8):
+        for x in range(8):
+            ny, nx = y + dy, x + dx
+            if 0 <= ny < 8 and 0 <= nx < 8:
+                out[ny, nx] = img[y, x]
+    return out
+
+
+digits_30 = []
+for d in digits:
+    digits_30.append(d)              # oryginał
+    digits_30.append(shift(d, 0, 1)) # w prawo
+    digits_30.append(shift(d, 0, -1))  # w lewo
+
+patterns_30 = np.array([d.flatten() for d in digits_30])
+print(patterns_30.shape)
+
+fig, axes = plt.subplots(3, 10, figsize=(14, 5))
+for n, ax in enumerate(axes.flatten()):
+    k, v = n % 10, n // 10           # k = cyfra, v = wariant
+    ax.imshow(digits_30[k * 3 + v], cmap="gray_r")
+    ax.axis("off")
+plt.show()
+
+
+noisy30_10 = np.array([add_noise(p, 0.1) for p in patterns_30])
+noisy30_20 = np.array([add_noise(p, 0.2) for p in patterns_30])
+noisy30_30 = np.array([add_noise(p, 0.3) for p in patterns_30])
+
+net30 = Hopfield()
+net30.train_hebb(patterns_30)
+
+ok = sum(np.array_equal(net30.recall(p), p) for p in patterns_30)
+print("czyste odtworzone:", ok, "/ 30")
+
+for level, data in ((0.1, noisy30_10), (0.2, noisy30_20), (0.3, noisy30_30)):
+    errs = [np.sum(net30.recall(x) != p) for x, p in zip(data, patterns_30)]
+    print(level, "średnio błędnych pikseli:", np.mean(errs))
