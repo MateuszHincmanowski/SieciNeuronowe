@@ -234,7 +234,7 @@ print(patterns_30.shape)
 
 fig, axes = plt.subplots(3, 10, figsize=(14, 5))
 for n, ax in enumerate(axes.flatten()):
-    k, v = n % 10, n // 10           # k = cyfra, v = wariant
+    k, v = n % 10, n // 10          
     ax.imshow(digits_30[k * 3 + v], cmap="gray_r")
     ax.axis("off")
 plt.show()
